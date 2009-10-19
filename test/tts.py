@@ -5,7 +5,7 @@
 
 import sys
 import time
-from TG.cepstral import CepstralPort
+from TG.ext.cepstral import CepstralPort
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~ Definitions 

@@ -6,8 +6,8 @@
 import sys
 import time
 
-from TG.cepstral import CepstralPort, raw
-from TG.cepstral.raw.swift import *
+from TG.ext.cepstral import CepstralPort, raw
+from TG.ext.cepstral.raw.swift import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~ Definitions 
