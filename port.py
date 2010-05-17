@@ -24,6 +24,19 @@ from .event import CepstralEvent
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class CepstralPort(CepstralObject, KVObject):
+    """CepstralPort is the primary interface to the cepstral text-to-speach engine.
+
+    Event names for kvpub:
+        @start
+        @end
+        @sentence
+        @phrase
+        @phoneme
+        @word
+        @syllable
+        @token
+    """
+
     _closeFromParam = staticmethod(_swift.swift_port_close)
     def __init__(self, engine=None, async=True, **kw):
         self.initAsync(async)
@@ -272,6 +285,17 @@ class CepstralPort(CepstralObject, KVObject):
         _swift.swift_port_set_callback(self, fn_cb, mask, 32)
 
     def _onSynthesisEvent(self, evt_param, evtKind, userData):
+        """
+        Event names for kvpub:
+            @start
+            @end
+            @sentence
+            @phrase
+            @phoneme
+            @word
+            @syllable
+            @token
+        """
         if CepstralEvent is None: 
             return 0
         evt = CepstralEvent.fromEvent(evt_param, evtKind, self)
