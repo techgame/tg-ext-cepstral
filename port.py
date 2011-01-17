@@ -149,6 +149,10 @@ class CepstralPort(CepstralObject, KVObject):
         self.kvpub('voice')
     voiceDir = property(None, setVoiceDir)
 
+    def setSpeechRate(self, rate=170):
+        # 170 is default
+        _swift.swift_port_set_param(self, "speech/rate", _swift.swift_val_int(rate), None)
+
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~ Port Methods
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
