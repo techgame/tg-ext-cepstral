@@ -170,10 +170,10 @@ class CepstralPort(CepstralObject, KVObject):
         return self.statusLookup[self.status_id(async).value]
     state = property(status)
 
-    def isPlaying(self):
-        return self.status() == 'running'
+    def isPlaying(self, async='any', playingStates=set(['running', 'queued'])):
+        return self.status(async) in playingStates
 
-    def wait(self, async=None):
+    def wait(self, async='tip'):
         async = self._asyncAsParam(async)
         if self.status_val() > 0:
             try:
@@ -182,7 +182,7 @@ class CepstralPort(CepstralObject, KVObject):
                 return False
             else: 
                 return True
-    def stop(self, async=None, place=-1):
+    def stop(self, async='tip', place=-1):
         async = self._asyncAsParam(async)
         if self.status_val() > 0:
             try: 
@@ -191,7 +191,7 @@ class CepstralPort(CepstralObject, KVObject):
                 return False
             else: 
                 return True
-    def pause(self, async=None, place=-1):
+    def pause(self, async='tip', place=-1):
         async = self._asyncAsParam(async)
         if self.status_val() > 0:
             try:
@@ -200,7 +200,7 @@ class CepstralPort(CepstralObject, KVObject):
                 return False
             else: 
                 return True
-    def resume(self, async=None, place=-1):
+    def resume(self, async='tip', place=-1):
         if self.status() == 'paused':
             # pause a second time resumes for cepstral
             self.pause(async, place)
@@ -212,29 +212,26 @@ class CepstralPort(CepstralObject, KVObject):
     _asyncHandle = None
     def initAsync(self, async=True):
         self._asyncHandle = c_void_p(0)
-        self.setAsync(async)
     def getAsync(self):
-        return self._async
+        return self._asyncHandle.value
     def setAsync(self, async):
-        self._async = async
+        self._asyncHandle.value = int(async or 0)
     async = property(getAsync, setAsync)
 
-    def _asyncAsParam(self, async=None, asByref=False):
+    _asyncIdMap = {None: None, True: None, False: None, 'any': -1, 'tip':-3}
+    def _asyncAsParam(self, async=None):
+        async = self._asyncIdMap.get(async, async)
         if async is None:
-            async = self.async
-
-        if async:
             handle = self._asyncHandle
-            if asByref:
-                handle = byref(handle)
-            return handle
+        else: handle = c_void_p(async)
+        return handle
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~ Speak methods
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def speak(self, text, encoding=None, isfile=False, async=None, params=None):
-        async = self._asyncAsParam(async, True)
+        async = self._asyncAsParam(async)
         if isfile:
             _swift.swift_port_speak_file(self, text, encoding, async, params)
             return 
@@ -243,7 +240,7 @@ class CepstralPort(CepstralObject, KVObject):
             encoding = encoding or 'utf-8'
             text = text.encode(encoding)
 
-        _swift.swift_port_speak_text(self, text, len(text), encoding, async, params)
+        _swift.swift_port_speak_text(self, text, len(text), encoding, byref(async), params)
         return self
     speakText = speak
 
@@ -272,8 +269,8 @@ class CepstralPort(CepstralObject, KVObject):
         return CepstralWaveform.from_param(waveform_param)
 
     def playWave(self, wave, async=None, params=None):
-        async = self._asyncAsParam(async, True)
-        _swift.swift_port_play_wave(self, wave, async, params)
+        async = self._asyncAsParam(async)
+        _swift.swift_port_play_wave(self, wave, byref(async), params)
         return self
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
